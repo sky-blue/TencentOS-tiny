@@ -17,7 +17,7 @@
           <Device>STM32G070RBTx</Device>
           <Vendor>STMicroelectronics</Vendor>
           <PackID>Keil.STM32G0xx_DFP.1.2.0</PackID>
-          <PackURL>https://www.keil.com/pack/</PackURL>
+          <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x20008FFF) IROM(0x8000000-0x801FFFF) CLOCK(8000000) CPUTYPE("Cortex-M0+")</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -54,7 +54,7 @@
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
-          <BrowseInformation>0</BrowseInformation>
+          <BrowseInformation>1</BrowseInformation>
           <ListingPath></ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
@@ -752,6 +752,11 @@
               <FileName>mqtt_iot_explorer_tc_ch20_oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\demo\mqtt_iot_explorer_tc_ch20_oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>application.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\demo\application.c</FilePath>
             </File>
           </Files>
         </Group>

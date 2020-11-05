@@ -14,15 +14,15 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2018 STMicroelectronics. 
+  * <h2><center>&copy; Copyright (c) 2018 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the 
+  * the "License"; You may not use this file except in compliance with the
   * License. You may obtain a copy of the License at:
   *                        opensource.org/licenses/BSD-3-Clause
   *
-  ******************************************************************************  
+  ******************************************************************************
   */
 
 /** @addtogroup CMSIS_Device
@@ -271,7 +271,7 @@ typedef struct
   __IO uint32_t BSRR;        /*!< GPIO port bit set/reset  register,     Address offset: 0x18      */
   __IO uint32_t LCKR;        /*!< GPIO port configuration lock register, Address offset: 0x1C      */
   __IO uint32_t AFR[2];      /*!< GPIO alternate function registers,     Address offset: 0x20-0x24 */
-  __IO uint32_t BRR;         /*!< GPIO Bit Reset register,               Address offset: 0x28      */
+//  __IO uint32_t BRR;         /*!< GPIO Bit Reset register,               Address offset: 0x28      */
 } GPIO_TypeDef;
 
 

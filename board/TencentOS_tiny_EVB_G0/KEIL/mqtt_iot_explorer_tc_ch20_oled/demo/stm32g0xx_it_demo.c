@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,7 +68,7 @@ extern UART_HandleTypeDef huart4;
 /* USER CODE END EV */
 
 /******************************************************************************/
-/*           Cortex-M0+ Processor Interruption and Exception Handlers          */ 
+/*           Cortex-M0+ Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
   * @brief This function handles Non maskable interrupt.
@@ -200,7 +200,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     /* data is defined in usart.c */
     extern uint8_t data;
     extern uint8_t ch20_msg;
-    
+
     if (huart->Instance == USART2) {
         HAL_UART_Receive_IT(&huart2, &data, 1);
         tos_at_uart_input_byte(data);
@@ -209,5 +209,25 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         ch20_parser_input_byte(ch20_msg);
     }
 }
+
+
+/**
+  * @brief This function handles EXTI line 0 and line 1 interrupts.
+  */
+void EXTI0_1_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI0_1_IRQn 0 */
+
+  /* USER CODE END EXTI0_1_IRQn 0 */
+
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+
+  /* USER CODE BEGIN EXTI0_1_IRQn 1 */
+
+  /* USER CODE END EXTI0_1_IRQn 1 */
+}
+
+
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

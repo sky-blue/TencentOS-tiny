@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * File Name          : gpio.h
-  * Description        : This file contains all the functions prototypes for 
-  *                      the gpio  
+  * Description        : This file contains all the functions prototypes for
+  *                      the gpio
   ******************************************************************************
   * @attention
   *
@@ -40,6 +40,14 @@ void MX_GPIO_Init(void);
 /* USER CODE BEGIN Prototypes */
 
 /* USER CODE END Prototypes */
+
+/* Private defines -----------------------------------------------------------*/
+#define PC0_KEY1_Pin GPIO_PIN_0
+#define PC0_KEY1_GPIO_Port GPIOC
+#define PC0_KEY1_EXTI_IRQn EXTI0_1_IRQn
+#define PC1_KEY2_Pin GPIO_PIN_1
+#define PC1_KEY2_GPIO_Port GPIOC
+#define PC1_KEY2_EXTI_IRQn EXTI0_1_IRQn
 
 #ifdef __cplusplus
 }
