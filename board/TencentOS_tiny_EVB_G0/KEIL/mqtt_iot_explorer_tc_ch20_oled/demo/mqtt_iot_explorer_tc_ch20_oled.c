@@ -179,7 +179,8 @@ void application_entry(void *arg)
 
     mqtt_demo_task();
     while (1) {
-        printf("This is a mqtt demo!\r\n");
+        printf("_.");
+//        printf("This is a mqtt demo!\r\n");
 //        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
         tos_task_delay(10000);
     }

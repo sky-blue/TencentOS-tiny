@@ -130,7 +130,7 @@ int esp8266_tencent_firmware_module_mqtt_state_get(mqtt_state_t *state)
     }
 
     str = strstr(echo.buffer, "+TCMQTTSTATE:");
-    if (!str) 
+    if (!str)
     {
         return -1;
     }
@@ -165,7 +165,7 @@ int esp8266_tencent_firmware_join_ap(const char *ssid, const char *pwd)
     at_echo_t echo;
 
     tos_at_echo_create(&echo, NULL, 0, "WIFI CONNECTED");
-    while (try++ < 10) {
+    while (try++ < 1) {
         tos_at_cmd_exec(&echo, 10000, "AT+CWJAP=\"%s\",\"%s\"\r\n", ssid, pwd);
         if (echo.status == AT_ECHO_STATUS_OK || echo.status == AT_ECHO_STATUS_EXPECT) {
             return 0;
@@ -295,7 +295,7 @@ int esp8266_tencent_firmware_ota_read_fwinfo(ota_fw_info_t *ota_fw_info)
     char echo_buffer[64];
     uint8_t FileSize[10] = {0};
     uint32_t updateFileSize = 0;
-    
+
     /* wait update command frome cloud forever */
     if(K_ERR_NONE != tos_sem_create_max(&ota_fw_info_sem, 0, 1)) {
         return -1;
@@ -306,7 +306,7 @@ int esp8266_tencent_firmware_ota_read_fwinfo(ota_fw_info_t *ota_fw_info)
 
     tos_at_cmd_exec(&echo, 2000, "AT+TCFWINFO?\r\n");
     if (echo.status == AT_ECHO_STATUS_OK || echo.status == AT_ECHO_STATUS_EXPECT) {
-        
+
         sscanf(echo_buffer, "%*[^\"]%*c%[^\"]%*[^,]%*c%[^,]%*[^\"]%*c%[^\"]", ota_fw_info->fw_version, FileSize, ota_fw_info->fw_md5);
         for(int i = 0; i<10; i++)
         {
@@ -328,24 +328,24 @@ k_sem_t ota_fw_data_sem;
 static int esp8266_tencent_firmware_ota_read_fwdata(uint8_t *ota_fw_data_buffer,uint16_t read_len)
 {
     at_echo_t echo;
-    
+
     if(K_ERR_NONE != tos_chr_fifo_create(&ota_fw_data_chr_fifo, ota_fw_data_buffer, read_len)) {
         return -1;
     }
-    
+
     if(K_ERR_NONE != tos_sem_create_max(&ota_fw_data_sem, 0, 1)) {
         return -1;
     }
-    
+
     tos_at_echo_create(&echo, NULL, 0, NULL);
 
     tos_at_cmd_exec(&echo, 300, "AT+TCREADFWDATA=%d\r\n", read_len);
     if (echo.status != AT_ECHO_STATUS_OK) {
         return -1;
     }
-    
+
     tos_sem_pend(&ota_fw_data_sem, TOS_TIME_FOREVER);
-    
+
     return tos_chr_fifo_pop_stream(&ota_fw_data_chr_fifo, ota_fw_data_buffer, read_len);
 }
 
@@ -415,13 +415,13 @@ void esp8266_tencent_firmware_recvcmd(void)
     if (tos_at_uart_read(buffer, read_len) != read_len) {
         return;
     }
-    
+
     if(!strstr((char*)buffer, "UPDATESUCCESS")) {
         return;
     }
-    
+
     tos_sem_post(&ota_fw_info_sem);
-    
+
     return;
 }
 
@@ -433,7 +433,7 @@ void esp8266_tencent_firmware_recvfwdata(void)
     uint8_t data;
     uint16_t data_len = 0, read_len = 0;
     static uint8_t buffer[128];
-    
+
     while (1) {
         if (tos_at_uart_read(&data, 1) != 1) {
             return;
@@ -457,9 +457,9 @@ void esp8266_tencent_firmware_recvfwdata(void)
 
         data_len -= read_len;
     } while (data_len > 0);
-    
+
     tos_sem_post(&ota_fw_data_sem);
-    
+
     return;
 }
 
@@ -471,8 +471,8 @@ at_event_t esp8266_tencent_firmware_at_event[] = {
 
 tencent_firmware_module_t tencent_firmware_module_esp8266 = {
     .init               = esp8266_tencent_firmware_init,
-    .info_set           = esp8266_tencent_firmware_module_info_set, 
-    .mqtt_conn          = esp8266_tencent_firmware_module_mqtt_conn,        
+    .info_set           = esp8266_tencent_firmware_module_info_set,
+    .mqtt_conn          = esp8266_tencent_firmware_module_mqtt_conn,
     .mqtt_discon        = esp8266_tencent_firmware_module_mqtt_discon,
     .mqtt_pub           = esp8266_tencent_firmware_module_mqtt_pub,
     .mqtt_publ          = esp8266_tencent_firmware_module_mqtt_publ,
@@ -488,7 +488,7 @@ tencent_firmware_module_t tencent_firmware_module_esp8266 = {
 int esp8266_tencent_firmware_sal_init(hal_uart_port_t uart_port)
 {
     int ret = -1;
-    
+
     if (tos_at_init(uart_port, esp8266_tencent_firmware_at_event,
                         sizeof(esp8266_tencent_firmware_at_event) /
                         sizeof(esp8266_tencent_firmware_at_event[0])) != 0) {
