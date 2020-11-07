@@ -12,6 +12,7 @@
 #include "i2c.h"
 #include "spi.h"
 #include "tos_k.h"
+#include "tim.h"
 
 void board_init(void);
 void SystemClock_Config(void);
