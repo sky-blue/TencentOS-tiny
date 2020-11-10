@@ -168,6 +168,8 @@ void mqtt_demo_task(void)
     }
 }
 
+extern void application_init(void);
+
 void application_entry(void *arg)
 {
     char *str = "TencentOS-tiny";
@@ -176,6 +178,8 @@ void application_entry(void *arg)
     OLED_Init();
     OLED_Clear();
     OLED_ShowString(0, 0, (uint8_t*)str, 16);
+
+    application_init();
 
     mqtt_demo_task();
     while (1) {
