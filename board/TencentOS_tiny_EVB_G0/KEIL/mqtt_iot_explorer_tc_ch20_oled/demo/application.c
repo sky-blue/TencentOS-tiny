@@ -31,7 +31,7 @@ k_mail_q_t mail_it_info_q;
 
 
 // 环形队列
-#define RING_QUEUE_ITEM_MAX        100
+#define RING_QUEUE_ITEM_MAX        50
 uint8_t ring_q_buffer[sizeof(interrupt_info_t) * RING_QUEUE_ITEM_MAX];
 k_ring_q_t ring_q;
 
@@ -91,16 +91,34 @@ void entry_printf_interrupt_info(void *arg)
 
             size_t item_size;
             int cnt = 0;
+            uint8_t buf[7] = {0};
+            uint32_t cmp = 0;
             while (K_ERR_NONE == tos_ring_q_dequeue(&ring_q, &mail, &item_size))
             {
                 TOS_ASSERT(item_size == sizeof(mail));
 
+                // 1: 1T, 0: 2T
+                if (cnt == 0)
+                    cmp = mail.delta_us * 1.5;
+                else
+                {
+                    if (mail.delta_us < cmp)
+                        buf[(cnt-1)/8] |= (uint8_t)(1 << ((cnt-1)%8));
+                }
+
                 cnt++;
-                printf("from_ring_q: port=%d, type=%s, t_ms=%d, t_cnt=%d, \ttime_us=%d, \tdelta_us=%d\n",
-                    mail.GPIO_Pin, mail.type  == IT_RISING ? "\\\\" : "//", mail.t_ms, mail.t_cnt, mail.t_us, mail.delta_us);
+                printf("from_ring_q: port=%d, type=%s, t_ms=%d, t_cnt=%d, \ttime_us=%d, \tdelta_us=%d, bit=%d\n",
+                    mail.GPIO_Pin, mail.type  == IT_RISING ? "\\\\" : "//", mail.t_ms, mail.t_cnt, mail.t_us, mail.delta_us, mail.delta_us < cmp ? 1 : 0);
             }
 
             printf("ring_q dequeue=%d\n", cnt);
+
+            printf("parse: cmp=%d\n", cmp);
+            for (size_t i = 0; i < sizeof(buf)/sizeof(buf[0]); ++i)
+            {
+                printf("%d\t%d\t", buf[i]%16, buf[i]/16);
+            }
+            printf("\n");
         }
         else
         {
