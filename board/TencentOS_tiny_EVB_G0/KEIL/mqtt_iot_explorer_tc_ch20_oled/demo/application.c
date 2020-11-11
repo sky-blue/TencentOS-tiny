@@ -19,12 +19,21 @@ typedef struct interrupt_info
     it_type type;
     uint32_t t_ms;
     uint32_t t_cnt;
+    uint32_t t_us;
+    uint32_t delta_us;
 } interrupt_info_t;
 
 
+// 邮箱
 #define MAIL_IT_INFO_SIZE   4
 uint8_t mail_it_info_pool[sizeof(interrupt_info_t) * MAIL_IT_INFO_SIZE];
 k_mail_q_t mail_it_info_q;
+
+
+// 环形队列
+#define RING_QUEUE_ITEM_MAX        100
+uint8_t ring_q_buffer[sizeof(interrupt_info_t) * RING_QUEUE_ITEM_MAX];
+k_ring_q_t ring_q;
 
 
 void entry_printf_interrupt_info(void *arg)
@@ -39,20 +48,62 @@ void entry_printf_interrupt_info(void *arg)
 
 //        printf("entry_printf_interrupt_info\r\n");
 
-        err = tos_mail_q_pend(&mail_it_info_q, &mail, &mail_size, TOS_TIME_FOREVER);
-        if (err == K_ERR_NONE) {
+        err = tos_mail_q_pend(&mail_it_info_q, &mail, &mail_size, 300);//TOS_TIME_FOREVER);
+        if (err == K_ERR_NONE)
+        {
             TOS_ASSERT(mail_size == sizeof(interrupt_info_t));
 
-            uint32_t time_us = mail.t_ms * 1000 + (50000 - mail.t_cnt);
+            mail.t_us = mail.t_ms * 1000 + (50000 - mail.t_cnt);
 
             if (last_time_us == 0)
-                last_time_us = time_us;
+                last_time_us = mail.t_us;
 
-            printf("entry_printf_interrupt_info: port=%d, type=%s, t_ms=%d, t_cnt=%d, \ttime_us=%d, \tdelta=%d\n",
-                mail.GPIO_Pin, mail.type  == IT_RISING ? "\\\\" : "//", mail.t_ms, mail.t_cnt, time_us, time_us - last_time_us);
+            mail.delta_us = mail.t_us - last_time_us;
 
-            last_time_us = time_us;
-        } else {
+            // 下降沿入队，检测高电平脉宽
+            if (mail.type == IT_FALLING)
+            {
+                err = tos_ring_q_enqueue(&ring_q, &mail, sizeof(mail));
+                if (err == K_ERR_RING_Q_FULL)
+                {
+                    printf("ring_q is full\n");
+                    interrupt_info_t tmp;
+                    size_t tmp_size;
+                    tos_ring_q_dequeue(&ring_q, &tmp, &tmp_size);
+                    err = tos_ring_q_enqueue(&ring_q, &mail, sizeof(mail));
+                    if (err != K_ERR_NONE)
+                        printf("tos_ring_q_enqueue err=%d\n", err);
+                }
+            }
+
+            printf("from_mail_q: port=%d, type=%s, t_ms=%d, t_cnt=%d, \ttime_us=%d, \tdelta_us=%d\n",
+                mail.GPIO_Pin, mail.type  == IT_RISING ? "\\\\" : "//", mail.t_ms, mail.t_cnt, mail.t_us, mail.delta_us);
+
+            last_time_us = mail.t_us;
+        }
+        else if (err == K_ERR_PEND_TIMEOUT)
+        {
+            if (tos_ring_q_is_empty(&ring_q))
+                continue;
+
+            printf("mail timeout.\n");
+            printf("ring_q size=%d\n", ring_q.total);
+
+            size_t item_size;
+            int cnt = 0;
+            while (K_ERR_NONE == tos_ring_q_dequeue(&ring_q, &mail, &item_size))
+            {
+                TOS_ASSERT(item_size == sizeof(mail));
+
+                cnt++;
+                printf("from_ring_q: port=%d, type=%s, t_ms=%d, t_cnt=%d, \ttime_us=%d, \tdelta_us=%d\n",
+                    mail.GPIO_Pin, mail.type  == IT_RISING ? "\\\\" : "//", mail.t_ms, mail.t_cnt, mail.t_us, mail.delta_us);
+            }
+
+            printf("ring_q dequeue=%d\n", cnt);
+        }
+        else
+        {
             printf("tos_mail_q_pend err=%d\n", err);
         }
 
@@ -71,6 +122,8 @@ osThreadDef(entry_printf_interrupt_info, osPriorityNormal, 1, STK_SIZE_TASK_PRIN
 void application_init(void)
 {
     tos_mail_q_create(&mail_it_info_q, mail_it_info_pool, MAIL_IT_INFO_SIZE, sizeof(interrupt_info_t));
+
+    tos_ring_q_create(&ring_q, ring_q_buffer, RING_QUEUE_ITEM_MAX, sizeof(interrupt_info_t));
 
 //    k_task_t task;
 
