@@ -165,6 +165,7 @@ void tim3_cnt()
         );
 }
 
+extern void report_ring(int door);
 
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
@@ -178,12 +179,16 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
     info.t_cnt = htim3.Instance->CNT;
 
     tos_mail_q_post(&mail_it_info_q, &info, sizeof(interrupt_info_t));
-
 //    tim3_cnt();
 //
 //    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 
 //    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
+
+    if (GPIO_Pin < 64)
+    {
+        report_ring(GPIO_Pin);
+    }
 }
 
 void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)

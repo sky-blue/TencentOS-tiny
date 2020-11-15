@@ -5,11 +5,12 @@
 #include "oled.h"
 
 
-#define PRODUCT_ID              "0WL6U52EFU"
-#define DEVICE_NAME             "dev001"
-#define DEVICE_KEY              "U0qHhoUF58+OmbbcWQfbTA=="
+#define PRODUCT_ID              "16AMSMHX5A"
+#define DEVICE_NAME             "dev_608"
+#define DEVICE_KEY              "7JmkXHFeeckSrpBUEFhqMw=="
 
 #define REPORT_DATA_TEMPLATE    "{\\\"method\\\":\\\"report\\\"\\,\\\"clientToken\\\":\\\"00000001\\\"\\,\\\"params\\\":{\\\"ch20_ppm_value\\\":%.3f}}"
+#define REPORT_DATA_RING        "{\\\"method\\\":\\\"report\\\"\\,\\\"clientToken\\\":\\\"00000001\\\"\\,\\\"params\\\":{\\\"ring\\\":%d}}"
 
 
 void default_message_handler(mqtt_message_t* msg)
@@ -86,7 +87,7 @@ void mqtt_demo_task(void)
         printf("esp8266 tencent firmware sal init fail, ret is %d\r\n", ret);
     }
 
-    esp8266_tencent_firmware_join_ap("HUAWEI Mate 10 Pro", "0755608608");
+    esp8266_tencent_firmware_join_ap("HUAWEI Mate 40 Pro", "0755608608");
 
     strncpy(dev_info.product_id, product_id, PRODUCT_ID_MAX_SIZE);
     strncpy(dev_info.device_name, device_name, DEVICE_NAME_MAX_SIZE);
@@ -155,10 +156,13 @@ void mqtt_demo_task(void)
             lightness = 0;
         }
 
-        if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0) {
-            printf("module mqtt pub fail\n");
-            break;
-        } else {
+        int err = tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload);
+        if (err != 0)
+        {
+            printf("module mqtt pub fail: %d\n", err);
+        }
+        else
+        {
             printf("module mqtt pub success\n");
         }
 
@@ -167,6 +171,26 @@ void mqtt_demo_task(void)
         tos_sleep_ms(10000);
     }
 }
+
+void report_ring(int door)
+{
+    door += 600;
+
+    char payload[256] = {0};
+    snprintf(payload, sizeof(payload), REPORT_DATA_RING, door);
+
+    int err = tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload);
+
+    if (err != 0)
+    {
+        printf("module mqtt pub fail: %d\n", err);
+    }
+    else
+    {
+        printf("module mqtt pub success\n");
+    }
+}
+
 
 extern void application_init(void);
 
